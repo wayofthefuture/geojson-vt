@@ -1,10 +1,10 @@
-## geojson-vt &mdash; GeoJSON Vector Tiles [![Node](https://github.com/mapbox/geojson-vt/actions/workflows/node.yml/badge.svg)](https://github.com/mapbox/geojson-vt/actions/workflows/node.yml) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
+## geojson-vt &mdash; GeoJSON Vector Tiles
 
 A highly efficient JavaScript library for **slicing GeoJSON data into vector tiles on the fly**,
 primarily designed to enable rendering and interacting with large geospatial datasets
 on the browser side (without a server).
 
-Created to power GeoJSON in [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js),
+Created to power GeoJSON in [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js),
 but can be useful in other visualization platforms
 like [Leaflet](https://github.com/Leaflet/Leaflet), [OpenLayers](https://openlayers.org/) and [d3](https://github.com/mbostock/d3),
 as well as Node.js server applications.
@@ -15,18 +15,14 @@ To make data rendering and interaction fast, the tiles are simplified,
 retaining the minimum level of detail appropriate for each zoom level
 (simplifying shapes, filtering out tiny polygons and polylines).
 
-Read more on how the library works [on the Mapbox blog](https://blog.mapbox.com/rendering-big-geodata-on-the-fly-with-geojson-vt-4e4d2a5dd1f2).
-
-There's a C++11 port: [geojson-vt-cpp](https://github.com/mapbox/geojson-vt-cpp)
-
 ### Demo
 
-Here's **geojson-vt** action in [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js),
+Here's **geojson-vt** action in [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js),
 dynamically loading a 100Mb US zip codes GeoJSON with 5.4 million points:
 
 ![](https://cloud.githubusercontent.com/assets/25395/5360312/86028d8e-7f91-11e4-811f-87f24acb09ca.gif)
 
-There's a convenient [debug page](http://mapbox.github.io/geojson-vt/debug/) to test out **geojson-vt** on different data.
+There's a convenient [debug page](http://maplibre.github.io/geojson-vt/debug/) to test out **geojson-vt** on different data.
 Just drag any GeoJSON on the page, watching the console.
 
 ![](https://cloud.githubusercontent.com/assets/25395/5363235/41955c6e-7fa8-11e4-9575-a66ef54cb6d9.gif)
