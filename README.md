@@ -1,3 +1,11 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://maplibre.org/img/maplibre-logos/maplibre-logo-for-dark-bg.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://maplibre.org/img/maplibre-logos/maplibre-logo-for-light-bg.svg">
+    <img alt="MapLibre Logo" src="https://maplibre.org/img/maplibre-logos/maplibre-logo-for-light-bg.svg" width="200">
+  </picture>
+</p>
+
 ## geojson-vt &mdash; GeoJSON Vector Tiles
 
 A highly efficient JavaScript library for **slicing GeoJSON data into vector tiles on the fly**,
@@ -114,3 +122,7 @@ Or use a browser build directly:
 ```html
 <script src="https://unpkg.com/geojson-vt/geojson-vt.js"></script>
 ```
+
+### Getting Involved
+
+Join the #maplibre slack channel at OSMUS: get an invite at https://slack.openstreetmap.us/
