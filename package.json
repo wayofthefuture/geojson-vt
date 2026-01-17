@@ -11,6 +11,7 @@
     "tiles",
     "geometry"
   ],
+  "author": "Vladimir Agafonkin",
   "module": "src/index.js",
   "main": "dist/geojson-vt-dev.js",
   "jsdelivr": "dist/geojson-vt.js",
