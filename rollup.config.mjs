@@ -13,5 +13,14 @@ const config = (file, plugins) => ({
 
 export default [
     config('dist/geojson-vt-dev.js', []),
-    config('dist/geojson-vt.js', [terser()])
+    config('dist/geojson-vt.js', [terser()]),
+    {
+        input: 'src/index.js',
+        output: {
+            format: 'esm',
+            file: 'dist/geojson-vt.mjs',
+            sourcemap: true
+        },
+        plugins: []
+    }
 ];

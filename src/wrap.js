@@ -21,22 +21,27 @@ export function wrap(features, options) {
 function shiftFeatureCoords(features, offset) {
     const newFeatures = [];
 
-    for (let i = 0; i < features.length; i++) {
-        const feature = features[i];
-        const type = feature.type;
+    for (const feature of features) {
 
-        let newGeometry;
-
-        if (type === 'Point' || type === 'MultiPoint' || type === 'LineString') {
-            newGeometry = shiftCoords(feature.geometry, offset);
-
-        } else if (type === 'MultiLineString' || type === 'Polygon') {
-            newGeometry = [];
+        switch (feature.type) {
+        case 'Point':
+        case 'MultiPoint':
+        case 'LineString': {
+            const newGeometry = shiftCoords(feature.geometry, offset);
+            newFeatures.push(createFeature(feature.id, feature.type, newGeometry, feature.tags));
+            break;
+        }
+        case 'MultiLineString':
+        case 'Polygon': {
+            const newGeometry = [];
             for (const line of feature.geometry) {
                 newGeometry.push(shiftCoords(line, offset));
             }
-        } else if (type === 'MultiPolygon') {
-            newGeometry = [];
+            newFeatures.push(createFeature(feature.id, feature.type, newGeometry, feature.tags));
+            break;
+        }
+        case 'MultiPolygon': {
+            const newGeometry = [];
             for (const polygon of feature.geometry) {
                 const newPolygon = [];
                 for (const line of polygon) {
@@ -44,9 +49,10 @@ function shiftFeatureCoords(features, offset) {
                 }
                 newGeometry.push(newPolygon);
             }
+            newFeatures.push(createFeature(feature.id, feature.type, newGeometry, feature.tags));
+            break;
         }
-
-        newFeatures.push(createFeature(feature.id, type, newGeometry, feature.tags));
+        }
     }
 
     return newFeatures;
