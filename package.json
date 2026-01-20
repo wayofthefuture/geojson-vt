@@ -22,11 +22,13 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/geojson": "^7946.0.16",
+    "@types/node": "^25.0.9",
     "@vitest/coverage-v8": "^4.0.17",
     "benchmark": "^2.1.4",
     "eslint": "^9.39.2",
     "rollup": "^4.55.2",
     "tslib": "^2.8.1",
+    "typedoc": "^0.28.16",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.53.1",
     "vitest": "^4.0.17"
@@ -35,10 +37,10 @@
   "scripts": {
     "lint": "eslint **/*.ts",
     "test": "vitest",
-    "build": "rollup -c",
+    "build": "rollup -c && tsc -p tsconfig.declaration.json",
     "watch": "rollup -cw",
     "bench": "node bench/benchmark.js",
-    "docs": "mkdir -p docs && cp -r debug/* docs/ && find docs -name '*.html' -exec sed -i 's|../dist/geojson-vt-dev.js|https://unpkg.com/@maplibre/geojson-vt@latest/dist/geojson-vt.js|g' {} +",
+    "docs": "typedoc && mkdir -p docs/debug && cp -r debug/* docs/debug && find docs/debug -name '*.html' -exec sed -i 's|../dist/geojson-vt-dev.js|https://unpkg.com/@maplibre/geojson-vt@latest/dist/geojson-vt.js|g' {} +",
     "prepublishOnly": "npm run test && npm run build"
   },
   "files": [

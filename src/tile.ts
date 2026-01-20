@@ -1,21 +1,45 @@
+import type { GeoJSONVTFeature, GeoJSONVTOptions, StartEndSizeArray } from "./definitions";
+
+export type GeoJSONVTTileFeature = {
+    id? : number | string | undefined;
+    type: 1 | 2 | 3;
+    tags: GeoJSON.GeoJsonProperties | null;
+    geometry: number[] | number[][];
+}
+
+export type GeoJSONVTTile = {
+    features: GeoJSONVTTileFeature[];
+    numPoints: number;
+    numSimplified: number;
+    numFeatures: number;
+    x: number;
+    y: number;
+    z: number;
+    transformed: boolean;
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+    source: GeoJSONVTFeature[] | null;
+}
 
 /**
  * Creates a tile object from the given features
- * @param {*} features - the features to include in the tile
- * @param {*} z
- * @param {*} tx
- * @param {*} ty
- * @param {*} options
+ * @param features - the features to include in the tile
+ * @param z
+ * @param tx
+ * @param ty
+ * @param options - the options object
  * @returns the created tile
  */
-export function createTile(features, z, tx, ty, options) {
+export function createTile(features: GeoJSONVTFeature[], z: number, tx: number, ty: number, options: GeoJSONVTOptions): GeoJSONVTTile {
     const tolerance = z === options.maxZoom ? 0 : options.tolerance / ((1 << z) * options.extent);
     const tile = {
-        features: [],
+        features: [] as GeoJSONVTTileFeature[],
         numPoints: 0,
         numSimplified: 0,
         numFeatures: features.length,
-        source: null,
+        source: null as GeoJSONVTFeature[] | null,
         x: tx,
         y: ty,
         z,
@@ -31,8 +55,8 @@ export function createTile(features, z, tx, ty, options) {
     return tile;
 }
 
-function addFeature(tile, feature, tolerance, options) {
-    const simplified = [];
+function addFeature(tile: GeoJSONVTTile, feature: GeoJSONVTFeature, tolerance: number, options: GeoJSONVTOptions) {
+    const simplified: number[] | number[][] = [];
 
     tile.minX = Math.min(tile.minX, feature.minX);
     tile.minY = Math.min(tile.minY, feature.minY);
@@ -43,25 +67,25 @@ function addFeature(tile, feature, tolerance, options) {
     case 'Point':
     case 'MultiPoint':
         for (let i = 0; i < feature.geometry.length; i += 3) {
-            simplified.push(feature.geometry[i], feature.geometry[i + 1]);
+            (simplified as number[]).push(feature.geometry[i] , feature.geometry[i + 1]);
             tile.numPoints++;
             tile.numSimplified++;
         }
         break;
     case 'LineString':
-        addLine(simplified, feature.geometry, tile, tolerance, false, false);
+        addLine(simplified as number[][], feature.geometry, tile, tolerance, false, false);
         break;
     case 'MultiLineString':
     case 'Polygon':
         for (let i = 0; i < feature.geometry.length; i++) {
-            addLine(simplified, feature.geometry[i], tile, tolerance, feature.type === 'Polygon', i === 0);
+            addLine(simplified as number[][], feature.geometry[i], tile, tolerance, feature.type === 'Polygon', i === 0);
         }
         break;
     case 'MultiPolygon':
         for (let k = 0; k < feature.geometry.length; k++) {
             const polygon = feature.geometry[k];
             for (let i = 0; i < polygon.length; i++) {
-                addLine(simplified, polygon[i], tile, tolerance, true, i === 0);
+                addLine(simplified as number[][], polygon[i], tile, tolerance, true, i === 0);
             }
         }
         break;
@@ -78,7 +102,7 @@ function addFeature(tile, feature, tolerance, options) {
         tags['mapbox_clip_end'] = feature.geometry.end / feature.geometry.size;
     }
 
-    const tileFeature = {
+    const tileFeature: GeoJSONVTTileFeature = {
         geometry: simplified,
         type: feature.type === 'Polygon' || feature.type === 'MultiPolygon' ? 3 :
         (feature.type === 'LineString' || feature.type === 'MultiLineString' ? 2 : 1),
@@ -90,7 +114,7 @@ function addFeature(tile, feature, tolerance, options) {
     tile.features.push(tileFeature);
 }
 
-function addLine(result, geom, tile, tolerance, isPolygon, isOuter) {
+function addLine(result: number[][], geom: StartEndSizeArray, tile: GeoJSONVTTile, tolerance: number, isPolygon: boolean, isOuter: boolean) {
     const sqTolerance = tolerance * tolerance;
 
     if (tolerance > 0 && (geom.size < (isPolygon ? sqTolerance : tolerance))) {
@@ -113,7 +137,7 @@ function addLine(result, geom, tile, tolerance, isPolygon, isOuter) {
     result.push(ring);
 }
 
-function rewind(ring, clockwise) {
+function rewind(ring: number[], clockwise: boolean) {
     let area = 0;
     for (let i = 0, len = ring.length, j = len - 2; i < len; j = i, i += 2) {
         area += (ring[i] - ring[j]) * (ring[i + 1] + ring[j + 1]);

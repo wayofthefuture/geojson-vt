@@ -1,15 +1,16 @@
 
 import {simplify} from './simplify';
 import {createFeature} from './feature';
+import type { GeoJSONVTFeature, GeoJSONVTOptions, StartEndSizeArray } from './definitions';
 
 /**
  * converts GeoJSON feature into an intermediate projected JSON vector format with simplification data
- * @param {*} data
- * @param {*} options
+ * @param data
+ * @param options
  * @returns
  */
-export function convert(data, options) {
-    const features = [];
+export function convert(data: GeoJSON.GeoJSON, options: GeoJSONVTOptions): GeoJSONVTFeature[] {
+    const features: GeoJSONVTFeature[] = [];
     switch (data.type) {
     case 'FeatureCollection':
         for (let i = 0; i < data.features.length; i++) {
@@ -20,16 +21,14 @@ export function convert(data, options) {
         convertFeature(features, data, options);
         break;
     default:
-        convertFeature(features, {geometry: data}, options);
+        convertFeature(features, {type: "Feature" as const, geometry: data, properties: undefined}, options);
     }
 
     return features;
 }
 
-function convertFeature(features, geojson, options, index) {
+function convertFeature(features: GeoJSONVTFeature[], geojson: GeoJSON.Feature, options: GeoJSONVTOptions, index?: number) {
     if (!geojson.geometry) return;
-    const coords = geojson.geometry.coordinates;
-    if (coords && coords.length === 0) return;
 
     if (geojson.geometry.type === 'GeometryCollection') {
         for (const singleGeometry of geojson.geometry.geometries) {
@@ -43,6 +42,8 @@ function convertFeature(features, geojson, options, index) {
         return;
     }
 
+    const coords = geojson.geometry.coordinates;
+    if (coords && coords.length === 0) return;
 
     const tolerance = Math.pow(options.tolerance / ((1 << options.maxZoom) * options.extent), 2);
     let id = geojson.id;
@@ -54,13 +55,13 @@ function convertFeature(features, geojson, options, index) {
 
     switch (geojson.geometry.type) {
     case 'Point': {
-        const pointGeometry = [];
+        const pointGeometry: StartEndSizeArray = [];
         convertPoint(geojson.geometry.coordinates, pointGeometry);
         features.push(createFeature(id, geojson.geometry.type, pointGeometry, geojson.properties));
         return;
     }
     case 'MultiPoint': {
-        const multiPointGeometry = [];
+        const multiPointGeometry: StartEndSizeArray = [];
         for (const p of geojson.geometry.coordinates) {
             convertPoint(p, multiPointGeometry);
         }
@@ -68,7 +69,7 @@ function convertFeature(features, geojson, options, index) {
         return;
     }
     case 'LineString': {
-        const lineGeometry = [];
+        const lineGeometry: StartEndSizeArray = [];
         convertLine(geojson.geometry.coordinates, lineGeometry, tolerance, false);
         features.push(createFeature(id, geojson.geometry.type, lineGeometry, geojson.properties));
         return;
@@ -77,27 +78,27 @@ function convertFeature(features, geojson, options, index) {
         if (options.lineMetrics) {
             // explode into linestrings to be able to track metrics
             for (const line of geojson.geometry.coordinates) {
-                const lineGeometry = [];
+                const lineGeometry: StartEndSizeArray = [];
                 convertLine(line, lineGeometry, tolerance, false);
                 features.push(createFeature(id, 'LineString', lineGeometry, geojson.properties));
             }
             return;
         }
-        const multiLineGeometry = [];
+        const multiLineGeometry: StartEndSizeArray[] = [];
         convertLines(geojson.geometry.coordinates, multiLineGeometry, tolerance, false);
         features.push(createFeature(id, geojson.geometry.type, multiLineGeometry, geojson.properties));
         return;
     }
     case 'Polygon': {
-        const polygonGeometry = [];
+        const polygonGeometry: StartEndSizeArray[] = [];
         convertLines(geojson.geometry.coordinates, polygonGeometry, tolerance, true);
         features.push(createFeature(id, geojson.geometry.type, polygonGeometry, geojson.properties));
         return;
     }
     case 'MultiPolygon': {
-        const multiPolygonGeometry = [];
+        const multiPolygonGeometry: StartEndSizeArray[][] = [];
         for (const polygon of geojson.geometry.coordinates) {
-            const newPolygon = [];
+            const newPolygon: StartEndSizeArray[] = [];
             convertLines(polygon, newPolygon, tolerance, true);
             multiPolygonGeometry.push(newPolygon);
         }
@@ -109,11 +110,11 @@ function convertFeature(features, geojson, options, index) {
     }
 }
 
-function convertPoint(coords, out) {
+function convertPoint(coords: GeoJSON.Position, out: number[]) {
     out.push(projectX(coords[0]), projectY(coords[1]), 0);
 }
 
-function convertLine(ring, out, tolerance, isPolygon) {
+function convertLine(ring: GeoJSON.Position[], out: StartEndSizeArray, tolerance: number, isPolygon: boolean) {
     let x0, y0;
     let size = 0;
 
@@ -144,19 +145,19 @@ function convertLine(ring, out, tolerance, isPolygon) {
     out.end = out.size;
 }
 
-function convertLines(rings, out, tolerance, isPolygon) {
+function convertLines(rings: GeoJSON.Position[][], out: StartEndSizeArray[], tolerance: number, isPolygon: boolean) {
     for (let i = 0; i < rings.length; i++) {
-        const geom = [];
+        const geom: StartEndSizeArray = [];
         convertLine(rings[i], geom, tolerance, isPolygon);
         out.push(geom);
     }
 }
 
-function projectX(x) {
+function projectX(x: number) {
     return x / 360 + 0.5;
 }
 
-function projectY(y) {
+function projectY(y: number) {
     const sin = Math.sin(y * Math.PI / 180);
     const y2 = 0.5 - 0.25 * Math.log((1 + sin) / (1 - sin)) / Math.PI;
     return y2 < 0 ? 0 : y2 > 1 ? 1 : y2;
